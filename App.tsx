@@ -1,17 +1,50 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Audio } from 'expo-av';
 
 //import Snackbar from 'react-native-snackbar';
 import Icons from './src/components/Icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function App(): JSX.Element {
   const [isCross, setIsCross] = useState<boolean>(false)
   const [gameWinner, setGameWinner] = useState<string>('')
   const [gameState, setGameState] = useState(new Array(9).fill('empty', 0, 8))
+  const [sound, setSound] = useState();
+
+  async function playSound() {
+    const { sound } = await Audio.Sound.createAsync( require('./assets/glass-break.mp3')
+    );
+    setSound(sound);
+
+ 
+    await sound.playAsync();
+  }
+
+  async function playSound2() {
+ 
+    const { sound } = await Audio.Sound.createAsync( require('./assets/toilet-flush.mp3')
+    );
+    setSound(sound);
+
+  
+    await sound.playAsync();
+  }
+
+  async function playSound3() {
+ 
+    const { sound } = await Audio.Sound.createAsync( require('./assets/cheers.mp3')
+    );
+    setSound(sound);
+
+  
+    await sound.playAsync();
+  }
+
 
   const reloadGame = () => {
+    playSound2()
     setIsCross(false)
     setGameWinner('')
     setGameState(new Array(9).fill('empty', 0 , 9))
@@ -25,48 +58,56 @@ export default function App(): JSX.Element {
       gameState[0] !== 'empty'
     ) {
       setGameWinner(`${gameState[0]} won the game! 🥳`);
+      playSound3()
     } else if (
       gameState[3] !== 'empty' &&
       gameState[3] === gameState[4] &&
       gameState[4] === gameState[5]
     ) {
       setGameWinner(`${gameState[3]} won the game! 🥳`);
+      playSound3()
     } else if (
       gameState[6] !== 'empty' &&
       gameState[6] === gameState[7] &&
       gameState[7] === gameState[8]
     ) {
       setGameWinner(`${gameState[6]} won the game! 🥳`);
+      playSound3()
     } else if (
       gameState[0] !== 'empty' &&
       gameState[0] === gameState[3] &&
       gameState[3] === gameState[6]
     ) {
       setGameWinner(`${gameState[0]} won the game! 🥳`);
+      playSound3()
     } else if (
       gameState[1] !== 'empty' &&
       gameState[1] === gameState[4] &&
       gameState[4] === gameState[7]
     ) {
       setGameWinner(`${gameState[1]} won the game! 🥳`);
+      playSound3()
     } else if (
       gameState[2] !== 'empty' &&
       gameState[2] === gameState[5] &&
       gameState[5] === gameState[8]
     ) {
       setGameWinner(`${gameState[2]} won the game! 🥳`);
+      playSound3()
     } else if (
       gameState[0] !== 'empty' &&
       gameState[0] === gameState[4] &&
       gameState[4] === gameState[8]
     ) {
       setGameWinner(`${gameState[0]} won the game! 🥳`);
+      playSound3()
     } else if (
       gameState[2] !== 'empty' &&
       gameState[2] === gameState[4] &&
       gameState[4] === gameState[6]
     ) {
       setGameWinner(`${gameState[2]} won the game! 🥳`);
+      playSound3()
     } else if (!gameState.includes('empty', 0)) {
       setGameWinner('Draw game... ⌛️');
     }
@@ -94,20 +135,57 @@ export default function App(): JSX.Element {
     }
 
     checkIsWinner()
+    playSound();
   }
   return (
+    <View style={styles.container}>
     <SafeAreaView>
+      
       <StatusBar />
-      <View>
-        <Text>
-          Tic Tac Toe
+      {gameWinner ? (
+        <View style={[styles.playerInfo, styles.winnerInfo]}>
+          <Text style={styles.winnerTxt}>{gameWinner}</Text>
+        </View>
+      ) : (
+        <View style={[styles.playerInfo, isCross ? styles.playerX : styles.playerO]}>
+          <Text style={styles.gameTurnTxt}>
+            Player {isCross? 'X' : 'O'}'s turn
+          </Text>
+        </View>
+      )}
+      <FlatList 
+      numColumns={3}
+      data={gameState}
+      style={styles.grid}
+      renderItem={({item, index})=>(
+        <Pressable
+        key={index}
+        style={styles.card}
+        onPress={() => onChangeItem(index)}
+        >
+          <Icons name={item}/>
+        </Pressable>
+      )}
+      />
+      <Pressable
+      style={styles.gameBtn}
+      onPress={reloadGame}
+      >
+        <Text style={styles.gameBtnText}>
+          {gameWinner ? 'Start new game' : 'Reload the game'}
         </Text>
-      </View>
+      </Pressable>
+    
     </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#111111',
+    height: '100%'
+  },
   playerInfo: {
     height: 56,
 
